@@ -346,7 +346,7 @@ export const App: React.FC<AppProps> = ({ roomId: initialRoomId, userName, creat
     },
     startVideoCall: () => {
       setIsVideoActive(true);
-      asciiVideo.startCapture('face');
+      asciiVideo.startCapture('webcam');
       asciiVideo.on('frame', (frame) => {
         setLocalFrame(frame);
         network?.sendVideoFrame(frame);
