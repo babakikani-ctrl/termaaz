@@ -1,0 +1,48 @@
+{
+  "name": "termaaz",
+  "version": "1.0.0",
+  "description": "P2P Terminal Collaboration Platform - Chat, Files, Todos, Video Calls",
+  "main": "dist/index.js",
+  "bin": {
+    "termaaz": "./dist/index.js"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.tsx",
+    "build": "tsc && chmod +x dist/index.js",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "terminal",
+    "chat",
+    "p2p",
+    "collaboration",
+    "todo",
+    "video-call",
+    "ascii"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "b4a": "^1.6.6",
+    "chalk": "^5.3.0",
+    "date-fns": "^3.3.1",
+    "hyperswarm": "^4.7.15",
+    "ink": "^4.4.1",
+    "ink-text-input": "^5.0.1",
+    "jimp": "^1.6.0",
+    "nanoid": "^5.0.4",
+    "qrcode-terminal": "^0.12.0",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.16",
+    "@types/react": "^18.2.52",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

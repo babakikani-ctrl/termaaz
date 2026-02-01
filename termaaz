@@ -1,0 +1,18 @@
+#!/bin/bash
+# TERMAAZ Launcher (Mac/Linux)
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Check if node_modules exists
+if [ ! -d "$DIR/node_modules" ]; then
+    echo "First run detected. Running setup..."
+    cd "$DIR" && ./setup.sh
+fi
+
+# Check if built
+if [ -f "$DIR/dist/index.js" ]; then
+    node "$DIR/dist/index.js" "$@"
+else
+    # Run in dev mode
+    cd "$DIR" && npx tsx src/index.tsx "$@"
+fi
