@@ -1,12 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// TERMAAZ - Todo View Component
+// TERMAAZ - Todo View Component (Professional UI)
 // ═══════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
 import { Box, Text } from 'ink';
 import type { Todo } from '../../core/types.js';
 import { formatRelative, truncate } from '../../utils/helpers.js';
-import { DEFAULT_THEME, STATUS } from '../../core/constants.js';
+import { DEFAULT_THEME } from '../../core/constants.js';
 
 interface TodoViewProps {
   todos: Todo[];
@@ -27,7 +27,7 @@ export const TodoView: React.FC<TodoViewProps> = ({
       {/* Header */}
       <Box marginBottom={1}>
         <Text color={DEFAULT_THEME.colors.primary} bold>
-          📋 Todo List
+          Todo List
         </Text>
         <Text color={DEFAULT_THEME.colors.textMuted}>
           {' '}({pendingTodos.length} pending, {completedTodos.length} done)
@@ -37,41 +37,45 @@ export const TodoView: React.FC<TodoViewProps> = ({
       {/* Pending todos */}
       {pendingTodos.length > 0 && (
         <Box flexDirection="column" marginBottom={1}>
-          <Text color={DEFAULT_THEME.colors.textMuted} bold>
-            ── Pending ──
+          <Text color={DEFAULT_THEME.colors.textMuted}>
+            Pending
           </Text>
-          {pendingTodos.map((todo, index) => (
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              isSelected={index === selectedIndex}
-              isOwn={todo.createdBy === currentUserId}
-            />
-          ))}
+          <Box flexDirection="column" marginTop={1}>
+            {pendingTodos.map((todo, index) => (
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                isSelected={index === selectedIndex}
+                isOwn={todo.createdBy === currentUserId}
+              />
+            ))}
+          </Box>
         </Box>
       )}
 
       {/* Completed todos */}
       {completedTodos.length > 0 && (
         <Box flexDirection="column">
-          <Text color={DEFAULT_THEME.colors.textMuted} bold>
-            ── Completed ──
+          <Text color={DEFAULT_THEME.colors.textMuted}>
+            Completed
           </Text>
-          {completedTodos.slice(-5).map((todo) => (
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              isSelected={false}
-              isOwn={todo.createdBy === currentUserId}
-            />
-          ))}
+          <Box flexDirection="column" marginTop={1}>
+            {completedTodos.slice(-5).map((todo) => (
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                isSelected={false}
+                isOwn={todo.createdBy === currentUserId}
+              />
+            ))}
+          </Box>
         </Box>
       )}
 
       {/* Empty state */}
       {todos.length === 0 && (
         <Box justifyContent="center" paddingY={2}>
-          <Text color={DEFAULT_THEME.colors.textMuted} italic>
+          <Text color={DEFAULT_THEME.colors.textMuted}>
             No todos yet. Add one with /todo add {'<task>'}
           </Text>
         </Box>
@@ -80,7 +84,7 @@ export const TodoView: React.FC<TodoViewProps> = ({
       {/* Help */}
       <Box marginTop={1} borderStyle="single" borderColor={DEFAULT_THEME.colors.border} paddingX={1}>
         <Text color={DEFAULT_THEME.colors.textMuted}>
-          /todo add {'<task>'} • /todo done {'<id>'} • /todo delete {'<id>'}
+          /todo add {'<task>'} | /todo done {'<id>'} | /todo delete {'<id>'}
         </Text>
       </Box>
     </Box>
@@ -94,28 +98,31 @@ interface TodoItemProps {
 }
 
 const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected, isOwn }) => {
-  const priorityColors = {
+  const priorityColors: Record<string, string> = {
     low: DEFAULT_THEME.colors.textMuted,
     medium: DEFAULT_THEME.colors.warning,
     high: DEFAULT_THEME.colors.error,
   };
 
-  const priorityIcons = {
-    low: '○',
-    medium: '◐',
-    high: '●',
-  };
+  // Box characters for checkbox
+  const checkbox = todo.completed ? '[x]' : '[ ]';
+  const checkboxColor = todo.completed ? DEFAULT_THEME.colors.success : DEFAULT_THEME.colors.textMuted;
 
   return (
-    <Box paddingLeft={1}>
-      {/* Selection indicator */}
+    <Box
+      paddingX={1}
+      paddingY={0}
+      borderStyle={isSelected ? 'round' : undefined}
+      borderColor={isSelected ? DEFAULT_THEME.colors.primary : undefined}
+    >
+      {/* Selection arrow */}
       <Text color={DEFAULT_THEME.colors.primary}>
-        {isSelected ? '› ' : '  '}
+        {isSelected ? '> ' : '  '}
       </Text>
 
       {/* Checkbox */}
-      <Text color={todo.completed ? DEFAULT_THEME.colors.success : DEFAULT_THEME.colors.textMuted}>
-        {todo.completed ? STATUS.success : STATUS.pending}{' '}
+      <Text color={checkboxColor} bold>
+        {checkbox}{' '}
       </Text>
 
       {/* ID */}
@@ -123,28 +130,29 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, isSelected, isOwn }) => {
         #{todo.id}{' '}
       </Text>
 
-      {/* Priority indicator */}
+      {/* Priority dot */}
       <Text color={priorityColors[todo.priority]}>
-        {priorityIcons[todo.priority]}{' '}
+        {todo.priority === 'high' ? '!' : todo.priority === 'medium' ? '*' : '-'}{' '}
       </Text>
 
       {/* Content */}
       <Text
         color={todo.completed ? DEFAULT_THEME.colors.textMuted : DEFAULT_THEME.colors.text}
         strikethrough={todo.completed}
+        dimColor={todo.completed}
       >
-        {truncate(todo.content, 50)}
+        {truncate(todo.content, 45)}
       </Text>
 
       {/* Creator */}
       <Text color={DEFAULT_THEME.colors.textMuted}>
-        {' '}• {todo.createdByName}{isOwn ? ' (you)' : ''}
+        {' '}by {todo.createdByName}{isOwn ? ' (you)' : ''}
       </Text>
 
-      {/* Completion info */}
+      {/* Completion time */}
       {todo.completed && todo.completedAt && (
-        <Text color={DEFAULT_THEME.colors.textMuted} dimColor>
-          {' '}✓ {formatRelative(todo.completedAt)}
+        <Text color={DEFAULT_THEME.colors.success} dimColor>
+          {' '}done {formatRelative(todo.completedAt)}
         </Text>
       )}
     </Box>
@@ -168,10 +176,10 @@ export const TodoStats: React.FC<TodoStatsProps> = ({ todos }) => {
       <Box>
         <Text color={DEFAULT_THEME.colors.textMuted}>Progress: </Text>
         <Text color={DEFAULT_THEME.colors.primary}>
-          {'█'.repeat(Math.round(progress * 10))}
+          {'#'.repeat(Math.round(progress * 10))}
         </Text>
         <Text color={DEFAULT_THEME.colors.border}>
-          {'░'.repeat(10 - Math.round(progress * 10))}
+          {'.'.repeat(10 - Math.round(progress * 10))}
         </Text>
         <Text color={DEFAULT_THEME.colors.textMuted}>
           {' '}{Math.round(progress * 100)}%
@@ -180,11 +188,11 @@ export const TodoStats: React.FC<TodoStatsProps> = ({ todos }) => {
 
       <Box>
         <Text color={DEFAULT_THEME.colors.success}>{completed} done</Text>
-        <Text color={DEFAULT_THEME.colors.textMuted}> • </Text>
+        <Text color={DEFAULT_THEME.colors.textMuted}> | </Text>
         <Text color={DEFAULT_THEME.colors.warning}>{pending} pending</Text>
         {highPriority > 0 && (
           <>
-            <Text color={DEFAULT_THEME.colors.textMuted}> • </Text>
+            <Text color={DEFAULT_THEME.colors.textMuted}> | </Text>
             <Text color={DEFAULT_THEME.colors.error}>{highPriority} urgent</Text>
           </>
         )}

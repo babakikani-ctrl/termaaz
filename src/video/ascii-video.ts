@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// TERMAAZ - ASCII Video System with Real Webcam Capture (Ultra HD with Braille)
+// TERMAAZ - ASCII Video System (Artistic Edge Detection)
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { EventEmitter } from 'events';
 import { spawn, ChildProcess } from 'child_process';
 import { VIDEO_WIDTH, VIDEO_HEIGHT, VIDEO_FPS } from '../core/constants.js';
 
-// Braille base character (empty: ⠀)
-const BRAILLE_BASE = 0x2800;
+// Artistic ASCII gradient - carefully chosen for visual clarity
+const ASCII_GRADIENT = ' .-:=+*#%@';
 
 export class AsciiVideo extends EventEmitter {
   private width: number;
@@ -17,14 +17,12 @@ export class AsciiVideo extends EventEmitter {
   private currentFrame: string[][] = [];
   private remoteFrames: Map<string, string[][]> = new Map();
   private frameBuffer: Buffer = Buffer.alloc(0);
-  // High resolution capture for detail
-  private outputWidth = 320;
-  private outputHeight = 180;
+  private outputWidth = 200;
+  private outputHeight = 120;
 
   constructor(width = VIDEO_WIDTH, height = VIDEO_HEIGHT) {
     super();
-    // Display dimensions (each braille = 2x4 pixels, so we get more detail)
-    this.width = width * 2;
+    this.width = width;
     this.height = height;
     this.initEmptyFrame();
   }
@@ -35,74 +33,65 @@ export class AsciiVideo extends EventEmitter {
       .map(() => Array(this.width).fill(' '));
   }
 
-  // Convert 2x4 pixel block to Braille character
-  // Braille dot positions:
-  // 1 4     (bits: 0x01, 0x08)
-  // 2 5     (bits: 0x02, 0x10)
-  // 3 6     (bits: 0x04, 0x20)
-  // 7 8     (bits: 0x40, 0x80)
-  private pixelsToBraille(pixels: number[]): string {
-    let code = BRAILLE_BASE;
-    if (pixels[0]) code += 0x01;  // top-left
-    if (pixels[1]) code += 0x02;  // mid-left-1
-    if (pixels[2]) code += 0x04;  // mid-left-2
-    if (pixels[3]) code += 0x08;  // top-right
-    if (pixels[4]) code += 0x10;  // mid-right-1
-    if (pixels[5]) code += 0x20;  // mid-right-2
-    if (pixels[6]) code += 0x40;  // bottom-left
-    if (pixels[7]) code += 0x80;  // bottom-right
-    return String.fromCharCode(code);
+  // Convert grayscale with contrast enhancement
+  private grayscaleToAscii(value: number, edge: number): string {
+    // Blend original with edge for artistic effect
+    const blended = Math.min(255, value + edge * 0.5);
+    const index = Math.floor((blended / 255) * (ASCII_GRADIENT.length - 1));
+    return ASCII_GRADIENT[Math.min(index, ASCII_GRADIENT.length - 1)];
   }
 
-  // Convert raw RGB buffer to Braille ASCII art (ultra high quality)
-  private rgbToAscii(buffer: Buffer, imgWidth: number, imgHeight: number): string[][] {
-    const result: string[][] = [];
+  // Sobel edge detection for artistic outlines
+  private detectEdge(buffer: Buffer, imgWidth: number, x: number, y: number): number {
+    if (x <= 0 || x >= imgWidth - 1 || y <= 0 || y >= this.outputHeight - 1) {
+      return 0;
+    }
 
-    // Calculate dynamic threshold based on image brightness
-    let totalBrightness = 0;
-    const pixelCount = imgWidth * imgHeight;
-    for (let i = 0; i < pixelCount; i++) {
-      const idx = i * 3;
+    const getGray = (px: number, py: number): number => {
+      const idx = (py * imgWidth + px) * 3;
       const r = buffer[idx] || 0;
       const g = buffer[idx + 1] || 0;
       const b = buffer[idx + 2] || 0;
-      totalBrightness += 0.299 * r + 0.587 * g + 0.114 * b;
-    }
-    const avgBrightness = totalBrightness / pixelCount;
-    const threshold = avgBrightness * 0.85;
+      return 0.299 * r + 0.587 * g + 0.114 * b;
+    };
 
-    // Each Braille character represents 2x4 pixels
-    const charsX = Math.floor(imgWidth / 2);
-    const charsY = Math.floor(imgHeight / 4);
+    // Sobel kernels
+    const gx =
+      -getGray(x - 1, y - 1) + getGray(x + 1, y - 1) +
+      -2 * getGray(x - 1, y) + 2 * getGray(x + 1, y) +
+      -getGray(x - 1, y + 1) + getGray(x + 1, y + 1);
 
-    for (let cy = 0; cy < charsY && cy < this.height; cy++) {
+    const gy =
+      -getGray(x - 1, y - 1) - 2 * getGray(x, y - 1) - getGray(x + 1, y - 1) +
+      getGray(x - 1, y + 1) + 2 * getGray(x, y + 1) + getGray(x + 1, y + 1);
+
+    return Math.sqrt(gx * gx + gy * gy);
+  }
+
+  // Convert RGB buffer to artistic ASCII
+  private rgbToAscii(buffer: Buffer, imgWidth: number, imgHeight: number): string[][] {
+    const result: string[][] = [];
+    const scaleX = imgWidth / this.width;
+    const scaleY = imgHeight / this.height;
+
+    for (let y = 0; y < this.height; y++) {
       const row: string[] = [];
-      for (let cx = 0; cx < charsX && cx < this.width; cx++) {
-        // Sample 2x4 pixel block
-        const pixels: number[] = [];
+      for (let x = 0; x < this.width; x++) {
+        const srcX = Math.floor(x * scaleX);
+        const srcY = Math.floor(y * scaleY);
+        const idx = (srcY * imgWidth + srcX) * 3;
 
-        // Row 0: positions 0, 3
-        // Row 1: positions 1, 4
-        // Row 2: positions 2, 5
-        // Row 3: positions 6, 7
-        for (let py = 0; py < 4; py++) {
-          for (let px = 0; px < 2; px++) {
-            const imgX = cx * 2 + px;
-            const imgY = cy * 4 + py;
-            const idx = (imgY * imgWidth + imgX) * 3;
+        const r = buffer[idx] || 0;
+        const g = buffer[idx + 1] || 0;
+        const b = buffer[idx + 2] || 0;
 
-            const r = buffer[idx] || 0;
-            const g = buffer[idx + 1] || 0;
-            const b = buffer[idx + 2] || 0;
-            const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+        // Grayscale with human perception weights
+        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
 
-            // Map pixel positions to braille positions
-            const braillePos = py < 3 ? (py + px * 3) : (6 + px);
-            pixels[braillePos] = gray > threshold ? 1 : 0;
-          }
-        }
+        // Edge detection for artistic outline
+        const edge = this.detectEdge(buffer, imgWidth, srcX, srcY);
 
-        row.push(this.pixelsToBraille(pixels));
+        row.push(this.grayscaleToAscii(gray, edge));
       }
       result.push(row);
     }
@@ -110,7 +99,7 @@ export class AsciiVideo extends EventEmitter {
     return result;
   }
 
-  // Start capturing from real webcam
+  // Start capturing from webcam
   startCapture(mode: 'webcam' | 'demo' = 'webcam'): void {
     if (this.isCapturing) return;
     this.isCapturing = true;
@@ -207,6 +196,7 @@ export class AsciiVideo extends EventEmitter {
         const nx = x / this.width;
         const ny = y / this.height;
 
+        // Animated face with cleaner look
         const faceDist = Math.sqrt(
           Math.pow((nx - 0.5) / 0.35, 2) +
           Math.pow((ny - 0.45) / 0.45, 2)
@@ -220,11 +210,11 @@ export class AsciiVideo extends EventEmitter {
         const isMouth = Math.abs(nx - 0.5) < 0.15 && Math.abs(ny - 0.65 - mouthOpen) < 0.03;
 
         let char = ' ';
-        if (faceDist < 1) char = '⠄';
-        if (faceDist > 0.9 && faceDist < 1) char = '⣿';
-        if (!blink && (leftEyeDist < 0.06 || rightEyeDist < 0.06)) char = '⣿';
-        if (blink && (leftEyeDist < 0.06 || rightEyeDist < 0.06)) char = '⠤';
-        if (isMouth) char = '⣀';
+        if (faceDist < 1) char = '.';
+        if (faceDist > 0.85 && faceDist < 1) char = '#';
+        if (!blink && (leftEyeDist < 0.06 || rightEyeDist < 0.06)) char = '@';
+        if (blink && (leftEyeDist < 0.06 || rightEyeDist < 0.06)) char = '-';
+        if (isMouth) char = '=';
 
         row.push(char);
       }

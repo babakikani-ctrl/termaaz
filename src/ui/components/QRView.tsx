@@ -17,7 +17,7 @@ export const QRView: React.FC<QRViewProps> = ({ onClose }) => {
   return (
     <Box flexDirection="column" padding={1}>
       <Text color={DEFAULT_THEME.colors.primary} bold>
-        📱 PHONE CAMERA SETUP
+        PHONE CAMERA SETUP
       </Text>
 
       <Box marginTop={1} flexDirection="column">

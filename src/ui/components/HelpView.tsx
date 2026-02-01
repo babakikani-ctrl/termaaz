@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// TERMAAZ - Help View Component
+// TERMAAZ - Help View Component (Clean UI)
 // ═══════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
@@ -24,13 +24,13 @@ export const HelpView: React.FC<HelpViewProps> = ({ scrollOffset = 0 }) => {
 
       <Box marginBottom={1}>
         <Text color={DEFAULT_THEME.colors.textMuted}>
-          Version {APP_VERSION} • P2P Terminal Collaboration
+          Version {APP_VERSION} | P2P Terminal Collaboration
         </Text>
       </Box>
 
       {/* Commands section */}
       <CommandSection
-        title="💬 Chat Commands"
+        title="Chat"
         commands={[
           { cmd: '/chat <message>', desc: 'Send a message' },
           { cmd: '/reply <id> <msg>', desc: 'Reply to a message' },
@@ -39,7 +39,7 @@ export const HelpView: React.FC<HelpViewProps> = ({ scrollOffset = 0 }) => {
       />
 
       <CommandSection
-        title="📋 Todo Commands"
+        title="Todo"
         commands={[
           { cmd: '/todo', desc: 'Open todo view' },
           { cmd: '/todo add <task>', desc: 'Add a new task' },
@@ -50,7 +50,7 @@ export const HelpView: React.FC<HelpViewProps> = ({ scrollOffset = 0 }) => {
       />
 
       <CommandSection
-        title="📁 File Commands"
+        title="Files"
         commands={[
           { cmd: '/file', desc: 'Open file browser' },
           { cmd: '/file share <path>', desc: 'Share a file or folder' },
@@ -61,40 +61,29 @@ export const HelpView: React.FC<HelpViewProps> = ({ scrollOffset = 0 }) => {
       />
 
       <CommandSection
-        title="📹 Video Call Commands"
+        title="Video Call"
         commands={[
-          { cmd: '/videocall', desc: 'Open video call menu (arrow keys!)' },
-          { cmd: '/call start', desc: 'Start video call (ASCII mode)' },
+          { cmd: '/videocall', desc: 'Open video call menu' },
+          { cmd: '/call start', desc: 'Start video call' },
           { cmd: '/call end', desc: 'End video call' },
           { cmd: '/call mute', desc: 'Toggle mute' },
         ]}
       />
 
       <CommandSection
-        title="📱 Phone Camera"
+        title="Phone Camera"
         commands={[
-          { cmd: '/qr', desc: 'Show QR code for camera setup' },
+          { cmd: '/qr', desc: 'Show camera setup guide' },
           { cmd: '/camera <ip:port>', desc: 'Connect to phone camera' },
           { cmd: '/camera off', desc: 'Disconnect camera' },
-          { cmd: '/camera help', desc: 'Show setup guide' },
         ]}
       />
 
       <CommandSection
-        title="🎉 Fun Mode (Maskharebazi!)"
-        commands={[
-          { cmd: '/maskharebazi', desc: 'Toggle fun animations' },
-          { cmd: '/maskharebazi now', desc: 'Play animation now' },
-          { cmd: '/maskharebazi list', desc: 'Show all animations' },
-        ]}
-      />
-
-      <CommandSection
-        title="⚙️ Other Commands"
+        title="Other"
         commands={[
           { cmd: '/users', desc: 'List online users' },
           { cmd: '/name <name>', desc: 'Change your display name' },
-          { cmd: '/view <view>', desc: 'Switch view (chat/todos/files/video)' },
           { cmd: '/help', desc: 'Show this help' },
           { cmd: '/quit', desc: 'Exit Termaaz' },
         ]}
@@ -103,28 +92,25 @@ export const HelpView: React.FC<HelpViewProps> = ({ scrollOffset = 0 }) => {
       {/* Keyboard shortcuts */}
       <Box flexDirection="column" marginTop={1}>
         <Text color={DEFAULT_THEME.colors.primary} bold>
-          ⌨️  Keyboard Shortcuts
+          Keyboard Shortcuts
         </Text>
         <Box flexDirection="column" paddingLeft={2} marginTop={1}>
           <ShortcutRow keys="Tab" desc="Switch between views" />
           <ShortcutRow keys="Esc" desc="Cancel / Go back" />
-          <ShortcutRow keys="↑/↓" desc="Navigate lists" />
+          <ShortcutRow keys="Up/Down" desc="Navigate lists" />
           <ShortcutRow keys="Enter" desc="Send message / Confirm" />
           <ShortcutRow keys="Ctrl+C" desc="Exit Termaaz" />
         </Box>
       </Box>
 
-      {/* Drag & Drop hint */}
+      {/* Tip */}
       <Box marginTop={1} borderStyle="round" borderColor={DEFAULT_THEME.colors.accent} padding={1}>
         <Box flexDirection="column">
           <Text color={DEFAULT_THEME.colors.accent} bold>
-            💡 Tip: Drag & Drop Files
+            Tip: Type / to see command menu
           </Text>
           <Text color={DEFAULT_THEME.colors.text}>
-            Drag files from your file manager and drop them into the terminal
-          </Text>
-          <Text color={DEFAULT_THEME.colors.text}>
-            to share them instantly with all participants!
+            Use arrow keys to navigate and Enter to select
           </Text>
         </Box>
       </Box>
@@ -132,7 +118,7 @@ export const HelpView: React.FC<HelpViewProps> = ({ scrollOffset = 0 }) => {
       {/* Credits */}
       <Box marginTop={1} justifyContent="center">
         <Text color={DEFAULT_THEME.colors.textMuted}>
-          Made with ♥ • P2P powered by Hyperswarm
+          P2P powered by Hyperswarm
         </Text>
       </Box>
     </Box>
@@ -204,7 +190,7 @@ export const WelcomeScreen: React.FC<{ roomId: string; userName: string }> = ({
         marginBottom={1}
       >
         <Text color={DEFAULT_THEME.colors.text}>
-          Welcome, <Text color={DEFAULT_THEME.colors.accent} bold>{userName}</Text>!
+          Welcome, <Text color={DEFAULT_THEME.colors.accent} bold>{userName}</Text>
         </Text>
         <Box marginTop={1}>
           <Text color={DEFAULT_THEME.colors.textMuted}>Room ID: </Text>
@@ -214,7 +200,7 @@ export const WelcomeScreen: React.FC<{ roomId: string; userName: string }> = ({
         </Box>
         <Box marginTop={1}>
           <Text color={DEFAULT_THEME.colors.textMuted}>
-            Share this ID with others to let them join!
+            Share this ID with others to let them join
           </Text>
         </Box>
       </Box>

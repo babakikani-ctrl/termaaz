@@ -58,19 +58,19 @@ export const DEFAULT_THEME: Theme = {
     info: '#3B82F6',          // Blue
   },
   symbols: {
-    bullet: '●',
-    check: '✓',
-    cross: '✗',
-    arrow: '→',
-    arrowRight: '▸',
-    circle: '○',
-    circleFilled: '●',
-    square: '□',
-    squareFilled: '■',
-    star: '★',
-    heart: '♥',
-    lightning: '⚡',
-    fire: '🔥',
+    bullet: '*',
+    check: 'x',
+    cross: '-',
+    arrow: '>',
+    arrowRight: '>',
+    circle: 'o',
+    circleFilled: '*',
+    square: '[ ]',
+    squareFilled: '[x]',
+    star: '*',
+    heart: '<3',
+    lightning: '!',
+    fire: '~',
   },
 };
 
@@ -120,67 +120,17 @@ export const SHORTCUTS = {
 
 // Help Text
 export const COMMANDS_HELP = `
-╭══════════════════════════════════════════════════════════════════╮
-│                      TERMAAZ COMMANDS                             │
-│                         Type /h for help                          │
-╠══════════════════════════════════════════════════════════════════╣
-│                                                                   │
-│  💬 CHAT                                                          │
-│  ────────────────────────────────────────────────────────────     │
-│  /chat <msg>        Send message              aliases: /c /say    │
-│  /reply <id> <msg>  Reply to message          aliases: /r         │
-│  /clear             Clear chat                aliases: /cls       │
-│                                                                   │
-│  📋 TODO LIST                                                     │
-│  ────────────────────────────────────────────────────────────     │
-│  /todo              Open todo view            aliases: /t         │
-│  /todo add <task>   Add new task              aliases: /t a       │
-│  /todo done <id>    Complete task             aliases: /t d       │
-│  /todo delete <id>  Delete task               aliases: /t del     │
-│  /todo priority <id> <low|med|high>           Set priority        │
-│                                                                   │
-│  📁 FILES                                                         │
-│  ────────────────────────────────────────────────────────────     │
-│  /file              Open file browser         aliases: /f         │
-│  /file share <path> Share file/folder         aliases: /f s       │
-│  /file list         List shared files         aliases: /f l       │
-│  /file get <id>     Download file             aliases: /f get     │
-│  /file browse       Browse local files        aliases: /f b       │
-│                                                                   │
-│  📹 VIDEO CALL (ASCII)                                            │
-│  ────────────────────────────────────────────────────────────     │
-│  /videocall         Start video call          aliases: /vc /call  │
-│  /call start        Start video call                              │
-│  /call end          End video call                                │
-│  /call mute         Toggle mute                                   │
-│                                                                   │
-│  📱 PHONE CAMERA (Use iPhone/Android as webcam!)                  │
-│  ────────────────────────────────────────────────────────────     │
-│  /qr                Show QR code & setup guide aliases: /qrcode   │
-│  /camera <ip:port>  Connect to phone camera   aliases: /cam       │
-│  /camera off        Disconnect camera                             │
-│  /camera help       Setup guide for phone apps                    │
-│                                                                   │
-│  👥 USERS                                                         │
-│  ────────────────────────────────────────────────────────────     │
-│  /users             List online users         aliases: /u /who    │
-│  /name <name>       Change your name          aliases: /nick      │
-│                                                                   │
-│  🎉 FUN MODE (Maskharebazi!)                                      │
-│  ────────────────────────────────────────────────────────────     │
-│  /maskharebazi      Toggle fun animations     aliases: /fun /msk  │
-│  /maskharebazi off  Turn off animations                           │
-│  /maskharebazi now  Trigger animation now                         │
-│  /maskharebazi list Show all animations                           │
-│                                                                   │
-│  🔧 OTHER                                                         │
-│  ────────────────────────────────────────────────────────────     │
-│  /h                 Show this help            aliases: /help /?   │
-│  /quit              Exit Termaaz              aliases: /q /exit   │
-│                                                                   │
-│  ⌨️  SHORTCUTS: Tab=Switch View  Esc=Back  ↑↓=Navigate            │
-│                                                                   │
-╰══════════════════════════════════════════════════════════════════╯
+TERMAAZ COMMANDS - Type /help for details
+
+CHAT: /chat, /reply, /clear
+TODO: /todo, /todo add, /todo done, /todo delete
+FILE: /file, /file share, /file list, /file get
+VIDEO: /videocall, /call start, /call end, /call mute
+PHONE: /qr, /camera <ip:port>, /camera off
+USERS: /users, /name <name>
+OTHER: /help, /quit
+
+SHORTCUTS: Tab=Switch View | Esc=Back | Up/Down=Navigate
 `;
 
 // Welcome ASCII Art

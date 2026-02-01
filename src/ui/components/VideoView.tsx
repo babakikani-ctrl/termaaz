@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// TERMAAZ - Video Call View Component (ASCII)
+// TERMAAZ - Video Call View Component (Clean UI)
 // ═══════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect } from 'react';
@@ -34,7 +34,7 @@ export const VideoView: React.FC<VideoViewProps> = ({
       <Box marginBottom={1} justifyContent="space-between">
         <Box>
           <Text color={DEFAULT_THEME.colors.error} bold>
-            ● LIVE
+            * LIVE
           </Text>
           <Text color={DEFAULT_THEME.colors.primary} bold>
             {' '}Video Call
@@ -45,7 +45,7 @@ export const VideoView: React.FC<VideoViewProps> = ({
         </Box>
         <Box gap={2}>
           <Text color={isMuted ? DEFAULT_THEME.colors.error : DEFAULT_THEME.colors.success}>
-            {isMuted ? '🔇 Muted' : '🔊 Unmuted'}
+            {isMuted ? '[MUTED]' : '[LIVE]'}
           </Text>
         </Box>
       </Box>
@@ -105,7 +105,7 @@ export const VideoView: React.FC<VideoViewProps> = ({
       {/* Controls */}
       <Box marginTop={1} borderStyle="single" borderColor={DEFAULT_THEME.colors.border} paddingX={1}>
         <Text color={DEFAULT_THEME.colors.textMuted}>
-          /call mute • /call end • Tab: Switch view
+          /call mute | /call end | Tab: Switch view
         </Text>
       </Box>
     </Box>
@@ -120,7 +120,6 @@ interface VideoFrameProps {
 }
 
 const VideoFrame: React.FC<VideoFrameProps> = ({ frame, width, height, borderColor }) => {
-  // Scale frame to target dimensions
   const scaledFrame = scaleFrame(frame, width, height);
 
   return (
@@ -165,14 +164,9 @@ function scaleFrame(frame: string[][], targetWidth: number, targetHeight: number
 const VideoInactive: React.FC = () => {
   return (
     <Box flexDirection="column" alignItems="center" justifyContent="center" flexGrow={1} padding={2}>
-      <Box marginBottom={2}>
-        <Text color={DEFAULT_THEME.colors.textMuted}>
-          ╭───────────────────────────────────────╮
-        </Text>
-      </Box>
       <Box marginBottom={1}>
         <Text color={DEFAULT_THEME.colors.primary} bold>
-          📹 Video Call
+          Video Call
         </Text>
       </Box>
       <Box marginBottom={2}>
@@ -181,23 +175,17 @@ const VideoInactive: React.FC = () => {
         </Text>
       </Box>
       <AsciiCamera />
-      <Box marginTop={2}>
-        <Text color={DEFAULT_THEME.colors.textMuted}>
-          ╰───────────────────────────────────────╯
-        </Text>
-      </Box>
     </Box>
   );
 };
 
 const AsciiCamera: React.FC = () => {
   const camera = [
-    '    ╭─────────────────╮    ',
-    '   ╭┤   ╭───────╮     ├╮   ',
-    '   │├───┤ ○   ○ ├─────┤│   ',
-    '   │├───┤   ◡   ├─────┤│   ',
-    '   ╰┤   ╰───────╯     ├╯   ',
-    '    ╰─────────────────╯    ',
+    '  .--------.  ',
+    ' /          \\ ',
+    '|   [o] [o]  |',
+    '|     __     |',
+    ' \\__________/ ',
   ];
 
   return (
@@ -215,12 +203,10 @@ const WaitingAnimation: React.FC = () => {
   const [frame, setFrame] = useState(0);
 
   const frames = [
-    '( •_•)',
-    '( •_•)>⌐■-■',
-    '(⌐■_■)',
-    '(⌐■_■)',
-    '( •_•)>⌐■-■',
-    '( •_•)',
+    '( -_-)',
+    '( o_o)',
+    '( O_O)',
+    '( o_o)',
   ];
 
   useEffect(() => {
@@ -249,7 +235,7 @@ const ParticipantsBar: React.FC<ParticipantsBarProps> = ({ participants }) => {
       <Text color={DEFAULT_THEME.colors.textMuted}>Participants:</Text>
       {participants.map((p) => (
         <Box key={p.id}>
-          <Text color={DEFAULT_THEME.colors.success}>●</Text>
+          <Text color={DEFAULT_THEME.colors.success}>*</Text>
           <Text color={p.color}> {p.name}</Text>
         </Box>
       ))}
@@ -268,17 +254,16 @@ export const ConnectingAnimation: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const frames = [
-    '   ╭──╮   ',
-    '  ╭┤  ├╮  ',
-    '  │○  ○│  ',
-    '  │ ◡◡ │  ',
-    '  ╰────╯  ',
+  const face = [
+    '  .---.  ',
+    ' / o o \\ ',
+    '|   -   |',
+    ' \\_____/ ',
   ];
 
   return (
     <Box flexDirection="column" alignItems="center">
-      {frames.map((line, i) => (
+      {face.map((line, i) => (
         <Text key={i} color={DEFAULT_THEME.colors.primary}>
           {line}
         </Text>

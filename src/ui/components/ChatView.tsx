@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// TERMAAZ - Chat View Component
+// TERMAAZ - Chat View Component (Clean UI)
 // ═══════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
@@ -21,7 +21,6 @@ export const ChatView: React.FC<ChatViewProps> = ({
   typingUsers,
   height = 15,
 }) => {
-  // Get last N messages that fit in the view
   const visibleMessages = messages.slice(-height);
 
   return (
@@ -30,7 +29,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
       <Box flexDirection="column" flexGrow={1}>
         {visibleMessages.length === 0 ? (
           <Box justifyContent="center" paddingY={2}>
-            <Text color={DEFAULT_THEME.colors.textMuted} italic>
+            <Text color={DEFAULT_THEME.colors.textMuted}>
               No messages yet. Start chatting!
             </Text>
           </Box>
@@ -67,8 +66,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn }) => {
   if (message.type === 'system') {
     return (
       <Box paddingX={1} justifyContent="center">
-        <Text color={DEFAULT_THEME.colors.textMuted} italic>
-          ─── {message.content} ───
+        <Text color={DEFAULT_THEME.colors.textMuted}>
+          --- {message.content} ---
         </Text>
       </Box>
     );
@@ -81,7 +80,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn }) => {
         <Text color={DEFAULT_THEME.colors.textMuted}>{time} </Text>
         <Text color={message.userColor} bold>{message.userName}</Text>
         <Text color={DEFAULT_THEME.colors.textMuted}> shared </Text>
-        <Text color={DEFAULT_THEME.colors.accent}>📎 {message.fileInfo.name}</Text>
+        <Text color={DEFAULT_THEME.colors.accent}>[file] {message.fileInfo.name}</Text>
       </Box>
     );
   }
@@ -108,7 +107,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn }) => {
         <Box paddingLeft={6}>
           {urls.map((url, i) => (
             <Text key={i} color={DEFAULT_THEME.colors.accent} underline>
-              🔗 {truncate(url, 50)}
+              [link] {truncate(url, 50)}
             </Text>
           ))}
         </Box>
@@ -146,8 +145,8 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users }) => {
 
   return (
     <Box>
-      <Text color={DEFAULT_THEME.colors.textMuted} italic>
-        {STATUS.typing.slice(0, dots)} {text}{'.'.repeat(dots)}
+      <Text color={DEFAULT_THEME.colors.textMuted}>
+        {'.'.repeat(dots)} {text}{'.'.repeat(dots)}
       </Text>
     </Box>
   );
@@ -166,7 +165,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   onChange,
   onSubmit,
   placeholder = 'Type a message...',
-  prefix = '›',
+  prefix = '>',
 }) => {
   return (
     <Box
@@ -178,7 +177,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       <Text color={value ? DEFAULT_THEME.colors.text : DEFAULT_THEME.colors.textMuted}>
         {value || placeholder}
       </Text>
-      <Text color={DEFAULT_THEME.colors.primary}>▌</Text>
+      <Text color={DEFAULT_THEME.colors.primary}>|</Text>
     </Box>
   );
 };
@@ -204,7 +203,7 @@ export const OnlineUsers: React.FC<OnlineUsersProps> = ({ users, currentUserId }
             {user.id === currentUserId ? ' (you)' : ''}
           </Text>
           {user.isTyping && (
-            <Text color={DEFAULT_THEME.colors.textMuted}> ✎</Text>
+            <Text color={DEFAULT_THEME.colors.textMuted}> ...</Text>
           )}
         </Box>
       ))}

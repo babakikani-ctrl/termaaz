@@ -498,11 +498,11 @@ export const App: React.FC<AppProps> = ({ roomId: initialRoomId, userName, creat
       case 'maskharebazi':
         if (option.id === 'toggle') {
           const enabled = commandContext.toggleFunMode();
-          stateManager.addSystemMessage(enabled ? '🎉 Maskharebazi ON!' : '😴 Maskharebazi OFF');
+          stateManager.addSystemMessage(enabled ? 'Maskharebazi ON' : 'Maskharebazi OFF');
           updateState();
         } else if (option.id === 'now') {
           commandContext.triggerAnimation();
-          stateManager.addSystemMessage('🎬 Animation playing!');
+          stateManager.addSystemMessage('Animation playing');
           updateState();
         } else if (option.id === 'list') {
           stateManager.addSystemMessage('Animations: duck, cat, tree, rocket, fish, ufo, butterfly, ghost, heart, runner, snail, stars, rainbow, dancer, pacman, coffee');
@@ -684,11 +684,11 @@ export const App: React.FC<AppProps> = ({ roomId: initialRoomId, userName, creat
 
   // Tabs configuration
   const tabs = [
-    { id: 'chat', label: 'Chat', icon: '💬' },
-    { id: 'todos', label: 'Todos', icon: '📋' },
-    { id: 'files', label: 'Files', icon: '📁' },
-    { id: 'video', label: 'Video', icon: '📹' },
-    { id: 'help', label: 'Help', icon: '❓' },
+    { id: 'chat', label: 'Chat' },
+    { id: 'todos', label: 'Todos' },
+    { id: 'files', label: 'Files' },
+    { id: 'video', label: 'Video' },
+    { id: 'help', label: 'Help' },
   ];
 
   // Render loading state
