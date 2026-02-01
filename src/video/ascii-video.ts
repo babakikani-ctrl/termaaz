@@ -1,13 +1,14 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// TERMAAZ - ASCII Video System (Artistic Edge Detection)
+// TERMAAZ - ASCII Video System (High Detail Dot Rendering)
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { EventEmitter } from 'events';
 import { spawn, ChildProcess } from 'child_process';
 import { VIDEO_WIDTH, VIDEO_HEIGHT, VIDEO_FPS } from '../core/constants.js';
 
-// Artistic ASCII gradient - carefully chosen for visual clarity
-const ASCII_GRADIENT = ' .-:=+*#%@';
+// Dot-based gradient for ultra-fine detail rendering
+// Uses density of dots to create grayscale effect
+const DOT_GRADIENT = ' .·:∙•●';
 
 export class AsciiVideo extends EventEmitter {
   private width: number;
@@ -17,31 +18,35 @@ export class AsciiVideo extends EventEmitter {
   private currentFrame: string[][] = [];
   private remoteFrames: Map<string, string[][]> = new Map();
   private frameBuffer: Buffer = Buffer.alloc(0);
-  private outputWidth = 200;
-  private outputHeight = 120;
+  // Higher resolution for more detail
+  private outputWidth = 320;
+  private outputHeight = 180;
 
   constructor(width = VIDEO_WIDTH, height = VIDEO_HEIGHT) {
     super();
-    this.width = width;
-    this.height = height;
+    // Increase default size for better detail
+    this.width = width * 2;
+    this.height = height * 1.5;
     this.initEmptyFrame();
   }
 
   private initEmptyFrame(): void {
-    this.currentFrame = Array(this.height)
+    this.currentFrame = Array(Math.floor(this.height))
       .fill(null)
-      .map(() => Array(this.width).fill(' '));
+      .map(() => Array(Math.floor(this.width)).fill(' '));
   }
 
-  // Convert grayscale with contrast enhancement
-  private grayscaleToAscii(value: number, edge: number): string {
-    // Blend original with edge for artistic effect
-    const blended = Math.min(255, value + edge * 0.5);
-    const index = Math.floor((blended / 255) * (ASCII_GRADIENT.length - 1));
-    return ASCII_GRADIENT[Math.min(index, ASCII_GRADIENT.length - 1)];
+  // Convert grayscale to dot density
+  private grayscaleToDot(value: number, edge: number): string {
+    // Invert: darker areas = more dots
+    const inverted = 255 - value;
+    // Enhance edges for clarity
+    const enhanced = Math.min(255, inverted + edge * 0.3);
+    const index = Math.floor((enhanced / 255) * (DOT_GRADIENT.length - 1));
+    return DOT_GRADIENT[Math.min(index, DOT_GRADIENT.length - 1)];
   }
 
-  // Sobel edge detection for artistic outlines
+  // Sobel edge detection for sharp outlines
   private detectEdge(buffer: Buffer, imgWidth: number, x: number, y: number): number {
     if (x <= 0 || x >= imgWidth - 1 || y <= 0 || y >= this.outputHeight - 1) {
       return 0;
@@ -55,7 +60,7 @@ export class AsciiVideo extends EventEmitter {
       return 0.299 * r + 0.587 * g + 0.114 * b;
     };
 
-    // Sobel kernels
+    // Sobel kernels for edge detection
     const gx =
       -getGray(x - 1, y - 1) + getGray(x + 1, y - 1) +
       -2 * getGray(x - 1, y) + 2 * getGray(x + 1, y) +
@@ -68,7 +73,7 @@ export class AsciiVideo extends EventEmitter {
     return Math.sqrt(gx * gx + gy * gy);
   }
 
-  // Convert RGB buffer to artistic ASCII
+  // Convert RGB buffer to dot-based ASCII with high detail
   private rgbToAscii(buffer: Buffer, imgWidth: number, imgHeight: number): string[][] {
     const result: string[][] = [];
     const scaleX = imgWidth / this.width;
@@ -88,10 +93,10 @@ export class AsciiVideo extends EventEmitter {
         // Grayscale with human perception weights
         const gray = 0.299 * r + 0.587 * g + 0.114 * b;
 
-        // Edge detection for artistic outline
+        // Edge detection for crisp outlines
         const edge = this.detectEdge(buffer, imgWidth, srcX, srcY);
 
-        row.push(this.grayscaleToAscii(gray, edge));
+        row.push(this.grayscaleToDot(gray, edge));
       }
       result.push(row);
     }
@@ -196,7 +201,7 @@ export class AsciiVideo extends EventEmitter {
         const nx = x / this.width;
         const ny = y / this.height;
 
-        // Animated face with cleaner look
+        // Animated face with dot-based rendering
         const faceDist = Math.sqrt(
           Math.pow((nx - 0.5) / 0.35, 2) +
           Math.pow((ny - 0.45) / 0.45, 2)
@@ -211,10 +216,11 @@ export class AsciiVideo extends EventEmitter {
 
         let char = ' ';
         if (faceDist < 1) char = '.';
-        if (faceDist > 0.85 && faceDist < 1) char = '#';
-        if (!blink && (leftEyeDist < 0.06 || rightEyeDist < 0.06)) char = '@';
-        if (blink && (leftEyeDist < 0.06 || rightEyeDist < 0.06)) char = '-';
-        if (isMouth) char = '=';
+        if (faceDist < 0.8) char = '·';
+        if (faceDist > 0.85 && faceDist < 1) char = '●';
+        if (!blink && (leftEyeDist < 0.06 || rightEyeDist < 0.06)) char = '●';
+        if (blink && (leftEyeDist < 0.06 || rightEyeDist < 0.06)) char = '·';
+        if (isMouth) char = '∙';
 
         row.push(char);
       }

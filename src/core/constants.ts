@@ -45,22 +45,22 @@ export const USER_COLORS = [
   '#818CF8', // Periwinkle
 ];
 
-// Theme: Ember - Warm & Inviting
+// Theme: Ember Dark - Deep & Mysterious
 export const DEFAULT_THEME: Theme = {
   name: 'ember',
   colors: {
-    primary: '#F97316',       // Ember Orange - main brand color
-    secondary: '#FBBF24',     // Golden - highlights
-    accent: '#FCD34D',        // Warm Yellow - accents
-    background: '#0C0A09',    // Warm Black
-    surface: '#1C1917',       // Warm Dark
-    text: '#FEF3C7',          // Cream White
-    textMuted: '#A8A29E',     // Warm Gray
-    border: '#44403C',        // Warm Border
-    success: '#84CC16',       // Lime - fresh
-    warning: '#FBBF24',       // Golden
-    error: '#F87171',         // Coral Red
-    info: '#38BDF8',          // Sky Blue
+    primary: '#EA580C',       // Deep Ember Orange
+    secondary: '#D97706',     // Dark Golden
+    accent: '#F59E0B',        // Amber
+    background: '#030303',    // Pure Black
+    surface: '#0A0A0A',       // Near Black
+    text: '#D4D4D4',          // Soft White
+    textMuted: '#525252',     // Dark Gray
+    border: '#262626',        // Dark Border
+    success: '#65A30D',       // Dark Lime
+    warning: '#D97706',       // Dark Golden
+    error: '#DC2626',         // Deep Red
+    info: '#0284C7',          // Deep Sky
   },
   symbols: {
     bullet: '◦',
