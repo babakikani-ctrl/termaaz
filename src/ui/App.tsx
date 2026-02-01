@@ -26,7 +26,7 @@ import { QRView } from './components/QRView.js';
 import { CommandMenu, shouldShowMenu, getMenuConfig, MENU_CONFIGS, SLASH_MENU } from './components/CommandMenu.js';
 import type { MenuOption, CommandMenuConfig } from './components/CommandMenu.js';
 
-import { DEFAULT_THEME, APP_NAME, TYPING_TIMEOUT } from '../core/constants.js';
+import { DEFAULT_THEME, APP_NAME, TYPING_TIMEOUT, BOX, STATUS, LOGO_SMALL } from '../core/constants.js';
 import { debounce } from '../utils/helpers.js';
 import { getLocalIP } from '../utils/qr-code.js';
 import os from 'os';
@@ -708,21 +708,24 @@ export const App: React.FC<AppProps> = ({ roomId: initialRoomId, userName, creat
   // Main render
   return (
     <Box flexDirection="column" width="100%" height="100%">
-      {/* Header - Clean & Simple */}
+      {/* Header - Ember Theme */}
       <Box paddingX={1} paddingY={0} justifyContent="space-between">
         <Box gap={1}>
+          <Text color={DEFAULT_THEME.colors.primary} bold>{BOX.diamondFilled}</Text>
           <Text color={DEFAULT_THEME.colors.primary} bold>{APP_NAME}</Text>
-          <Text color={DEFAULT_THEME.colors.textMuted}>Room: </Text>
+          <Text color={DEFAULT_THEME.colors.border}>{BOX.dot}</Text>
+          <Text color={DEFAULT_THEME.colors.textMuted}>Room</Text>
           <Text color={DEFAULT_THEME.colors.accent} bold>{roomId}</Text>
         </Box>
         <Box gap={2}>
           <Text color={isConnected ? DEFAULT_THEME.colors.success : DEFAULT_THEME.colors.error}>
-            {isConnected ? '●' : '○'}
+            {isConnected ? STATUS.online : STATUS.offline}
           </Text>
-          <Text color={DEFAULT_THEME.colors.textMuted}>{onlineUsers.length} online</Text>
+          <Text color={DEFAULT_THEME.colors.textMuted}>{onlineUsers.length}</Text>
+          <Text color={DEFAULT_THEME.colors.border}>online</Text>
         </Box>
       </Box>
-      <Divider />
+      <Divider style="fancy" />
 
       {/* Tabs */}
       <Tabs tabs={tabs} activeTab={currentView} />
@@ -839,13 +842,13 @@ export const App: React.FC<AppProps> = ({ roomId: initialRoomId, userName, creat
         </Box>
       )}
 
-      {/* Input area */}
+      {/* Input area - Ember Theme */}
       <Box
         borderStyle="round"
         borderColor={DEFAULT_THEME.colors.primary}
         paddingX={1}
       >
-        <Text color={DEFAULT_THEME.colors.primary}>› </Text>
+        <Text color={DEFAULT_THEME.colors.primary}>{DEFAULT_THEME.symbols.arrowRight} </Text>
         <TextInput
           value={input}
           onChange={(value) => {

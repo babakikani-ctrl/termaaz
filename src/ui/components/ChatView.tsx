@@ -1,12 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// TERMAAZ - Chat View Component (Clean UI)
+// TERMAAZ - Chat View Component (Ember Theme)
 // ═══════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
 import { Box, Text } from 'ink';
 import type { Message, User } from '../../core/types.js';
 import { formatTime, truncate, extractUrls } from '../../utils/helpers.js';
-import { DEFAULT_THEME, STATUS } from '../../core/constants.js';
+import { DEFAULT_THEME, BOX, STATUS } from '../../core/constants.js';
 
 interface ChatViewProps {
   messages: Message[];
@@ -28,11 +28,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
       {/* Messages */}
       <Box flexDirection="column" flexGrow={1}>
         {visibleMessages.length === 0 ? (
-          <Box justifyContent="center" paddingY={2}>
-            <Text color={DEFAULT_THEME.colors.textMuted}>
-              No messages yet. Start chatting!
-            </Text>
-          </Box>
+          <EmptyChat />
         ) : (
           visibleMessages.map((msg) => (
             <MessageBubble
@@ -54,6 +50,33 @@ export const ChatView: React.FC<ChatViewProps> = ({
   );
 };
 
+// Empty chat state
+const EmptyChat: React.FC = () => {
+  return (
+    <Box flexDirection="column" alignItems="center" justifyContent="center" paddingY={4}>
+      <Box flexDirection="column" alignItems="center" marginBottom={2}>
+        <Text color={DEFAULT_THEME.colors.border}>
+          {BOX.diamond}   {BOX.diamond}
+        </Text>
+        <Text color={DEFAULT_THEME.colors.border}>
+            {BOX.dot}
+        </Text>
+        <Text color={DEFAULT_THEME.colors.border}>
+          {BOX.diamond}   {BOX.diamond}
+        </Text>
+      </Box>
+      <Text color={DEFAULT_THEME.colors.textMuted}>
+        No messages yet
+      </Text>
+      <Box marginTop={1}>
+        <Text color={DEFAULT_THEME.colors.accent}>
+          Start chatting!
+        </Text>
+      </Box>
+    </Box>
+  );
+};
+
 interface MessageBubbleProps {
   message: Message;
   isOwn: boolean;
@@ -62,13 +85,15 @@ interface MessageBubbleProps {
 const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn }) => {
   const time = formatTime(message.timestamp);
 
-  // System message
+  // System message - centered with artistic styling
   if (message.type === 'system') {
     return (
-      <Box paddingX={1} justifyContent="center">
+      <Box paddingX={1} justifyContent="center" marginY={0}>
+        <Text color={DEFAULT_THEME.colors.border}>{BOX.horizontal} </Text>
         <Text color={DEFAULT_THEME.colors.textMuted}>
-          --- {message.content} ---
+          {message.content}
         </Text>
+        <Text color={DEFAULT_THEME.colors.border}> {BOX.horizontal}</Text>
       </Box>
     );
   }
@@ -79,8 +104,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn }) => {
       <Box paddingX={1} paddingY={0}>
         <Text color={DEFAULT_THEME.colors.textMuted}>{time} </Text>
         <Text color={message.userColor} bold>{message.userName}</Text>
-        <Text color={DEFAULT_THEME.colors.textMuted}> shared </Text>
-        <Text color={DEFAULT_THEME.colors.accent}>[file] {message.fileInfo.name}</Text>
+        <Text color={DEFAULT_THEME.colors.border}> {BOX.dot} </Text>
+        <Text color={DEFAULT_THEME.colors.accent}>
+          [{BOX.diamond}] {message.fileInfo.name}
+        </Text>
       </Box>
     );
   }
@@ -89,26 +116,41 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn }) => {
   const urls = extractUrls(message.content);
   const hasUrls = urls.length > 0;
 
-  // Regular chat message
+  // Regular chat message with artistic styling
   return (
     <Box paddingX={1} flexDirection="column">
       <Box>
+        {/* Time */}
         <Text color={DEFAULT_THEME.colors.textMuted}>{time} </Text>
+
+        {/* User indicator */}
+        <Text color={message.userColor}>{isOwn ? STATUS.online : STATUS.active} </Text>
+
+        {/* Username */}
         <Text color={message.userColor} bold>
           {message.userName}
-          {isOwn ? ' (you)' : ''}
         </Text>
-        <Text color={DEFAULT_THEME.colors.textMuted}>: </Text>
+        {isOwn && <Text color={DEFAULT_THEME.colors.textMuted}> (you)</Text>}
+
+        {/* Separator */}
+        <Text color={DEFAULT_THEME.colors.border}> {BOX.dot} </Text>
+
+        {/* Content */}
         <Text color={DEFAULT_THEME.colors.text} wrap="wrap">
           {message.content}
         </Text>
       </Box>
+
+      {/* URL links */}
       {hasUrls && (
-        <Box paddingLeft={6}>
+        <Box paddingLeft={8}>
           {urls.map((url, i) => (
-            <Text key={i} color={DEFAULT_THEME.colors.accent} underline>
-              [link] {truncate(url, 50)}
-            </Text>
+            <Box key={i}>
+              <Text color={DEFAULT_THEME.colors.border}>{BOX.teeRight} </Text>
+              <Text color={DEFAULT_THEME.colors.info} underline>
+                {truncate(url, 50)}
+              </Text>
+            </Box>
           ))}
         </Box>
       )}
@@ -121,12 +163,12 @@ interface TypingIndicatorProps {
 }
 
 const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users }) => {
-  const [dots, setDots] = React.useState(1);
+  const [frame, setFrame] = React.useState(0);
 
   React.useEffect(() => {
     const timer = setInterval(() => {
-      setDots((d) => (d % 3) + 1);
-    }, 400);
+      setFrame((f) => (f + 1) % 4);
+    }, 300);
     return () => clearInterval(timer);
   }, []);
 
@@ -143,11 +185,15 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users }) => {
     text = `${names[0]} and ${names.length - 1} others are typing`;
   }
 
+  const dots = [BOX.dot, BOX.diamond, BOX.diamondFilled, BOX.diamond];
+
   return (
     <Box>
+      <Text color={DEFAULT_THEME.colors.primary}>{dots[frame]} </Text>
       <Text color={DEFAULT_THEME.colors.textMuted}>
-        {'.'.repeat(dots)} {text}{'.'.repeat(dots)}
+        {text}
       </Text>
+      <Text color={DEFAULT_THEME.colors.primary}> {dots[frame]}</Text>
     </Box>
   );
 };
@@ -165,19 +211,19 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   onChange,
   onSubmit,
   placeholder = 'Type a message...',
-  prefix = '>',
+  prefix = DEFAULT_THEME.symbols.arrowRight,
 }) => {
   return (
     <Box
       borderStyle="round"
-      borderColor={DEFAULT_THEME.colors.border}
+      borderColor={DEFAULT_THEME.colors.primary}
       paddingX={1}
     >
       <Text color={DEFAULT_THEME.colors.primary}>{prefix} </Text>
       <Text color={value ? DEFAULT_THEME.colors.text : DEFAULT_THEME.colors.textMuted}>
         {value || placeholder}
       </Text>
-      <Text color={DEFAULT_THEME.colors.primary}>|</Text>
+      <Text color={DEFAULT_THEME.colors.accent}>|</Text>
     </Box>
   );
 };
@@ -190,23 +236,44 @@ interface OnlineUsersProps {
 export const OnlineUsers: React.FC<OnlineUsersProps> = ({ users, currentUserId }) => {
   return (
     <Box flexDirection="column" paddingX={1}>
+      {/* Header */}
       <Box marginBottom={1}>
-        <Text color={DEFAULT_THEME.colors.textMuted} bold>
-          Online ({users.length})
+        <Text color={DEFAULT_THEME.colors.primary}>{BOX.diamondFilled} </Text>
+        <Text color={DEFAULT_THEME.colors.accent} bold>
+          Online
+        </Text>
+        <Text color={DEFAULT_THEME.colors.textMuted}> ({users.length})</Text>
+      </Box>
+
+      {/* Divider */}
+      <Box marginBottom={1}>
+        <Text color={DEFAULT_THEME.colors.border}>
+          {BOX.horizontal.repeat(16)}
         </Text>
       </Box>
+
+      {/* User list */}
       {users.map((user) => (
-        <Box key={user.id}>
+        <Box key={user.id} marginBottom={0}>
           <Text color={DEFAULT_THEME.colors.success}>{STATUS.online} </Text>
-          <Text color={user.color}>
+          <Text color={user.color} bold>
             {user.name}
-            {user.id === currentUserId ? ' (you)' : ''}
           </Text>
+          {user.id === currentUserId && (
+            <Text color={DEFAULT_THEME.colors.textMuted}> (you)</Text>
+          )}
           {user.isTyping && (
-            <Text color={DEFAULT_THEME.colors.textMuted}> ...</Text>
+            <Text color={DEFAULT_THEME.colors.accent}> {BOX.dot}{BOX.dot}{BOX.dot}</Text>
           )}
         </Box>
       ))}
+
+      {/* Footer decoration */}
+      <Box marginTop={1}>
+        <Text color={DEFAULT_THEME.colors.border}>
+          {BOX.horizontal.repeat(16)}
+        </Text>
+      </Box>
     </Box>
   );
 };

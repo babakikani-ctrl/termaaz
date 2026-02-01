@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// TERMAAZ - Help View Component (Clean UI)
+// TERMAAZ - Help View Component (Ember Theme)
 // ═══════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
 import { Box, Text } from 'ink';
-import { DEFAULT_THEME, APP_VERSION, LOGO } from '../../core/constants.js';
+import { DEFAULT_THEME, APP_VERSION, BOX, STATUS, LOGO_SMALL } from '../../core/constants.js';
 
 interface HelpViewProps {
   scrollOffset?: number;
@@ -13,113 +13,136 @@ interface HelpViewProps {
 export const HelpView: React.FC<HelpViewProps> = ({ scrollOffset = 0 }) => {
   return (
     <Box flexDirection="column" flexGrow={1} padding={1}>
-      {/* Logo */}
-      <Box flexDirection="column" marginBottom={1}>
-        {LOGO.split('\n').slice(1, 7).map((line, i) => (
-          <Text key={i} color={DEFAULT_THEME.colors.primary}>
-            {line}
+      {/* Artistic Logo Header */}
+      <Box flexDirection="column" alignItems="center" marginBottom={1}>
+        <Text color={DEFAULT_THEME.colors.primary}>
+          {BOX.star} {BOX.horizontal.repeat(8)} {BOX.star}
+        </Text>
+        <Box marginY={1}>
+          <Text color={DEFAULT_THEME.colors.primary} bold>
+            {BOX.diamondFilled} termaaz {BOX.diamondFilled}
           </Text>
-        ))}
-      </Box>
-
-      <Box marginBottom={1}>
+        </Box>
         <Text color={DEFAULT_THEME.colors.textMuted}>
-          Version {APP_VERSION} | P2P Terminal Collaboration
+          where terminals meet
+        </Text>
+        <Text color={DEFAULT_THEME.colors.primary}>
+          {BOX.star} {BOX.horizontal.repeat(8)} {BOX.star}
         </Text>
       </Box>
 
-      {/* Commands section */}
-      <CommandSection
-        title="Chat"
-        commands={[
-          { cmd: '/chat <message>', desc: 'Send a message' },
-          { cmd: '/reply <id> <msg>', desc: 'Reply to a message' },
-          { cmd: '/clear', desc: 'Clear chat history' },
-        ]}
-      />
+      {/* Version info */}
+      <Box justifyContent="center" marginBottom={1}>
+        <Text color={DEFAULT_THEME.colors.border}>{BOX.diamond} </Text>
+        <Text color={DEFAULT_THEME.colors.textMuted}>v{APP_VERSION}</Text>
+        <Text color={DEFAULT_THEME.colors.border}> {BOX.dot} </Text>
+        <Text color={DEFAULT_THEME.colors.textMuted}>P2P Collaboration</Text>
+        <Text color={DEFAULT_THEME.colors.border}> {BOX.diamond}</Text>
+      </Box>
 
-      <CommandSection
-        title="Todo"
-        commands={[
-          { cmd: '/todo', desc: 'Open todo view' },
-          { cmd: '/todo add <task>', desc: 'Add a new task' },
-          { cmd: '/todo done <id>', desc: 'Mark task as complete' },
-          { cmd: '/todo delete <id>', desc: 'Delete a task' },
-          { cmd: '/todo priority <id> <low|medium|high>', desc: 'Set priority' },
-        ]}
-      />
+      {/* Commands sections */}
+      <Box flexDirection="column" gap={1}>
+        <CommandSection
+          title="Chat"
+          icon={BOX.diamondFilled}
+          commands={[
+            { cmd: '/chat <msg>', desc: 'Send message' },
+            { cmd: '/reply <id> <msg>', desc: 'Reply to message' },
+            { cmd: '/clear', desc: 'Clear history' },
+          ]}
+        />
 
-      <CommandSection
-        title="Files"
-        commands={[
-          { cmd: '/file', desc: 'Open file browser' },
-          { cmd: '/file share <path>', desc: 'Share a file or folder' },
-          { cmd: '/file list', desc: 'List shared files' },
-          { cmd: '/file get <id>', desc: 'Download a shared file' },
-          { cmd: '/file browse', desc: 'Browse local files' },
-        ]}
-      />
+        <CommandSection
+          title="Tasks"
+          icon={BOX.diamondFilled}
+          commands={[
+            { cmd: '/todo', desc: 'View tasks' },
+            { cmd: '/todo add <task>', desc: 'Add task' },
+            { cmd: '/todo done <id>', desc: 'Complete task' },
+            { cmd: '/todo delete <id>', desc: 'Remove task' },
+            { cmd: '/todo priority <id> <level>', desc: 'Set priority' },
+          ]}
+        />
 
-      <CommandSection
-        title="Video Call"
-        commands={[
-          { cmd: '/videocall', desc: 'Open video call menu' },
-          { cmd: '/call start', desc: 'Start video call' },
-          { cmd: '/call end', desc: 'End video call' },
-          { cmd: '/call mute', desc: 'Toggle mute' },
-        ]}
-      />
+        <CommandSection
+          title="Files"
+          icon={BOX.diamondFilled}
+          commands={[
+            { cmd: '/file', desc: 'File browser' },
+            { cmd: '/file share <path>', desc: 'Share file' },
+            { cmd: '/file list', desc: 'List shared' },
+            { cmd: '/file get <id>', desc: 'Download' },
+          ]}
+        />
 
-      <CommandSection
-        title="Phone Camera"
-        commands={[
-          { cmd: '/qr', desc: 'Show camera setup guide' },
-          { cmd: '/camera <ip:port>', desc: 'Connect to phone camera' },
-          { cmd: '/camera off', desc: 'Disconnect camera' },
-        ]}
-      />
+        <CommandSection
+          title="Video"
+          icon={BOX.diamondFilled}
+          commands={[
+            { cmd: '/videocall', desc: 'Video menu' },
+            { cmd: '/call start', desc: 'Start call' },
+            { cmd: '/call end', desc: 'End call' },
+            { cmd: '/call mute', desc: 'Toggle mute' },
+          ]}
+        />
 
-      <CommandSection
-        title="Other"
-        commands={[
-          { cmd: '/users', desc: 'List online users' },
-          { cmd: '/name <name>', desc: 'Change your display name' },
-          { cmd: '/help', desc: 'Show this help' },
-          { cmd: '/quit', desc: 'Exit Termaaz' },
-        ]}
-      />
+        <CommandSection
+          title="Camera"
+          icon={BOX.diamondFilled}
+          commands={[
+            { cmd: '/qr', desc: 'Setup guide' },
+            { cmd: '/camera <ip:port>', desc: 'Connect phone' },
+            { cmd: '/camera off', desc: 'Disconnect' },
+          ]}
+        />
+
+        <CommandSection
+          title="Other"
+          icon={BOX.diamond}
+          commands={[
+            { cmd: '/users', desc: 'Online users' },
+            { cmd: '/name <name>', desc: 'Change name' },
+            { cmd: '/help', desc: 'This menu' },
+            { cmd: '/quit', desc: 'Exit' },
+          ]}
+        />
+      </Box>
 
       {/* Keyboard shortcuts */}
       <Box flexDirection="column" marginTop={1}>
-        <Text color={DEFAULT_THEME.colors.primary} bold>
-          Keyboard Shortcuts
-        </Text>
-        <Box flexDirection="column" paddingLeft={2} marginTop={1}>
-          <ShortcutRow keys="Tab" desc="Switch between views" />
-          <ShortcutRow keys="Esc" desc="Cancel / Go back" />
-          <ShortcutRow keys="Up/Down" desc="Navigate lists" />
-          <ShortcutRow keys="Enter" desc="Send message / Confirm" />
-          <ShortcutRow keys="Ctrl+C" desc="Exit Termaaz" />
+        <Box marginBottom={1}>
+          <Text color={DEFAULT_THEME.colors.primary}>{BOX.diamondFilled} </Text>
+          <Text color={DEFAULT_THEME.colors.accent} bold>Shortcuts</Text>
+        </Box>
+        <Box flexDirection="column" paddingLeft={2}>
+          <ShortcutRow keys="Tab" desc="Switch views" />
+          <ShortcutRow keys="Esc" desc="Go back" />
+          <ShortcutRow keys="Up/Down" desc="Navigate" />
+          <ShortcutRow keys="Enter" desc="Confirm" />
+          <ShortcutRow keys="Ctrl+C" desc="Exit" />
         </Box>
       </Box>
 
-      {/* Tip */}
-      <Box marginTop={1} borderStyle="round" borderColor={DEFAULT_THEME.colors.accent} padding={1}>
-        <Box flexDirection="column">
-          <Text color={DEFAULT_THEME.colors.accent} bold>
-            Tip: Type / to see command menu
-          </Text>
+      {/* Tip box */}
+      <Box marginTop={1} flexDirection="column">
+        <Box>
+          <Text color={DEFAULT_THEME.colors.accent}>{BOX.topLeft}{BOX.horizontal} Tip {BOX.horizontal.repeat(30)}{BOX.topRight}</Text>
+        </Box>
+        <Box paddingX={1}>
           <Text color={DEFAULT_THEME.colors.text}>
-            Use arrow keys to navigate and Enter to select
+            Type / to see command menu
           </Text>
+        </Box>
+        <Box>
+          <Text color={DEFAULT_THEME.colors.accent}>{BOX.bottomLeft}{BOX.horizontal.repeat(36)}{BOX.bottomRight}</Text>
         </Box>
       </Box>
 
-      {/* Credits */}
+      {/* Footer */}
       <Box marginTop={1} justifyContent="center">
-        <Text color={DEFAULT_THEME.colors.textMuted}>
-          P2P powered by Hyperswarm
-        </Text>
+        <Text color={DEFAULT_THEME.colors.border}>{BOX.diamond} </Text>
+        <Text color={DEFAULT_THEME.colors.textMuted}>Powered by Hyperswarm P2P</Text>
+        <Text color={DEFAULT_THEME.colors.border}> {BOX.diamond}</Text>
       </Box>
     </Box>
   );
@@ -127,19 +150,21 @@ export const HelpView: React.FC<HelpViewProps> = ({ scrollOffset = 0 }) => {
 
 interface CommandSectionProps {
   title: string;
+  icon: string;
   commands: Array<{ cmd: string; desc: string }>;
 }
 
-const CommandSection: React.FC<CommandSectionProps> = ({ title, commands }) => {
+const CommandSection: React.FC<CommandSectionProps> = ({ title, icon, commands }) => {
   return (
-    <Box flexDirection="column" marginBottom={1}>
-      <Text color={DEFAULT_THEME.colors.primary} bold>
-        {title}
-      </Text>
+    <Box flexDirection="column">
+      <Box marginBottom={0}>
+        <Text color={DEFAULT_THEME.colors.primary}>{icon} </Text>
+        <Text color={DEFAULT_THEME.colors.accent} bold>{title}</Text>
+      </Box>
       <Box flexDirection="column" paddingLeft={2}>
         {commands.map((c, i) => (
           <Box key={i}>
-            <Text color={DEFAULT_THEME.colors.accent}>{c.cmd.padEnd(35)}</Text>
+            <Text color={DEFAULT_THEME.colors.secondary}>{c.cmd.padEnd(28)}</Text>
             <Text color={DEFAULT_THEME.colors.textMuted}>{c.desc}</Text>
           </Box>
         ))}
@@ -156,63 +181,80 @@ interface ShortcutRowProps {
 const ShortcutRow: React.FC<ShortcutRowProps> = ({ keys, desc }) => {
   return (
     <Box>
-      <Text color={DEFAULT_THEME.colors.warning} bold>
-        {keys.padEnd(12)}
-      </Text>
+      <Text color={DEFAULT_THEME.colors.accent} bold>[{keys}]</Text>
+      <Text color={DEFAULT_THEME.colors.border}> {BOX.dot} </Text>
       <Text color={DEFAULT_THEME.colors.textMuted}>{desc}</Text>
     </Box>
   );
 };
 
-// Welcome screen shown on first connection
+// Welcome screen with artistic design
 export const WelcomeScreen: React.FC<{ roomId: string; userName: string }> = ({
   roomId,
   userName,
 }) => {
   return (
     <Box flexDirection="column" alignItems="center" justifyContent="center" padding={2}>
-      {/* Logo */}
-      <Box flexDirection="column" marginBottom={2}>
-        {LOGO.split('\n').slice(1, 7).map((line, i) => (
-          <Text key={i} color={DEFAULT_THEME.colors.primary}>
-            {line}
-          </Text>
-        ))}
-      </Box>
-
-      {/* Room info */}
-      <Box
-        flexDirection="column"
-        alignItems="center"
-        borderStyle="round"
-        borderColor={DEFAULT_THEME.colors.primary}
-        padding={2}
-        marginBottom={1}
-      >
-        <Text color={DEFAULT_THEME.colors.text}>
-          Welcome, <Text color={DEFAULT_THEME.colors.accent} bold>{userName}</Text>
+      {/* Artistic logo */}
+      <Box flexDirection="column" alignItems="center" marginBottom={2}>
+        <Text color={DEFAULT_THEME.colors.primary}>
+          {BOX.star} {BOX.dot} {BOX.diamondFilled} {BOX.dot} {BOX.star}
         </Text>
-        <Box marginTop={1}>
-          <Text color={DEFAULT_THEME.colors.textMuted}>Room ID: </Text>
-          <Text color={DEFAULT_THEME.colors.warning} bold>
-            {roomId}
+        <Box marginY={1}>
+          <Text color={DEFAULT_THEME.colors.primary} bold>
+            {BOX.doubleHorizontal.repeat(3)} termaaz {BOX.doubleHorizontal.repeat(3)}
           </Text>
         </Box>
-        <Box marginTop={1}>
-          <Text color={DEFAULT_THEME.colors.textMuted}>
-            Share this ID with others to let them join
+        <Text color={DEFAULT_THEME.colors.textMuted}>
+          where terminals meet
+        </Text>
+        <Text color={DEFAULT_THEME.colors.primary}>
+          {BOX.star} {BOX.dot} {BOX.diamondFilled} {BOX.dot} {BOX.star}
+        </Text>
+      </Box>
+
+      {/* Welcome box */}
+      <Box flexDirection="column" alignItems="center" marginBottom={1}>
+        <Box>
+          <Text color={DEFAULT_THEME.colors.primary}>
+            {BOX.topLeft}{BOX.horizontal.repeat(30)}{BOX.topRight}
+          </Text>
+        </Box>
+        <Box paddingX={2} paddingY={1} flexDirection="column" alignItems="center">
+          <Box>
+            <Text color={DEFAULT_THEME.colors.text}>Welcome, </Text>
+            <Text color={DEFAULT_THEME.colors.accent} bold>{userName}</Text>
+          </Box>
+          <Box marginTop={1}>
+            <Text color={DEFAULT_THEME.colors.textMuted}>Room: </Text>
+            <Text color={DEFAULT_THEME.colors.warning} bold>{roomId}</Text>
+          </Box>
+        </Box>
+        <Box>
+          <Text color={DEFAULT_THEME.colors.primary}>
+            {BOX.bottomLeft}{BOX.horizontal.repeat(30)}{BOX.bottomRight}
           </Text>
         </Box>
       </Box>
 
-      {/* Quick start */}
-      <Box flexDirection="column" marginTop={1}>
+      {/* Share hint */}
+      <Box marginTop={1} paddingX={2}>
+        <Text color={DEFAULT_THEME.colors.border}>{BOX.diamond} </Text>
+        <Text color={DEFAULT_THEME.colors.textMuted}>
+          Share this code with others to connect
+        </Text>
+        <Text color={DEFAULT_THEME.colors.border}> {BOX.diamond}</Text>
+      </Box>
+
+      {/* Quick tips */}
+      <Box flexDirection="column" marginTop={2} alignItems="center">
         <Text color={DEFAULT_THEME.colors.textMuted}>
           Type a message and press Enter to chat
         </Text>
-        <Text color={DEFAULT_THEME.colors.textMuted}>
-          Type /help to see all available commands
-        </Text>
+        <Box marginTop={1}>
+          <Text color={DEFAULT_THEME.colors.accent}>/help</Text>
+          <Text color={DEFAULT_THEME.colors.textMuted}> for all commands</Text>
+        </Box>
       </Box>
     </Box>
   );
