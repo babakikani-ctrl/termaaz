@@ -17,8 +17,8 @@ export class AsciiVideo extends EventEmitter {
   private currentFrame: string[][] = [];
   private remoteFrames: Map<string, string[][]> = new Map();
   private frameBuffer: Buffer = Buffer.alloc(0);
-  private captureWidth = 160;  // Capture resolution
-  private captureHeight = 90;
+  private outputWidth = 160;   // Output resolution after scale
+  private outputHeight = 90;
 
   constructor(width = VIDEO_WIDTH, height = VIDEO_HEIGHT) {
     super();
@@ -82,19 +82,19 @@ export class AsciiVideo extends EventEmitter {
     let inputArgs: string[];
 
     if (platform === 'darwin') {
-      // macOS - use AVFoundation
+      // macOS - use AVFoundation (capture at 640x480@30fps, scale down)
       inputArgs = [
         '-f', 'avfoundation',
-        '-framerate', String(VIDEO_FPS),
-        '-video_size', `${this.captureWidth}x${this.captureHeight}`,
+        '-framerate', '30',
+        '-video_size', '640x480',
         '-i', '0:none', // Video device 0, no audio
       ];
     } else if (platform === 'linux') {
       // Linux - use video4linux2
       inputArgs = [
         '-f', 'v4l2',
-        '-framerate', String(VIDEO_FPS),
-        '-video_size', `${this.captureWidth}x${this.captureHeight}`,
+        '-framerate', '30',
+        '-video_size', '640x480',
         '-i', '/dev/video0',
       ];
     } else {
@@ -104,6 +104,7 @@ export class AsciiVideo extends EventEmitter {
     }
 
     const outputArgs = [
+      '-vf', `scale=${this.outputWidth}:${this.outputHeight},fps=${VIDEO_FPS}`,
       '-f', 'rawvideo',
       '-pix_fmt', 'rgb24',
       '-an', // No audio
@@ -118,7 +119,7 @@ export class AsciiVideo extends EventEmitter {
         stdio: ['ignore', 'pipe', 'ignore'],
       });
 
-      const frameSize = this.captureWidth * this.captureHeight * 3; // RGB
+      const frameSize = this.outputWidth * this.outputHeight * 3; // RGB
 
       this.ffmpegProcess.stdout?.on('data', (chunk: Buffer) => {
         this.frameBuffer = Buffer.concat([this.frameBuffer, chunk]);
@@ -129,7 +130,7 @@ export class AsciiVideo extends EventEmitter {
           this.frameBuffer = this.frameBuffer.subarray(frameSize);
 
           // Convert to ASCII
-          this.currentFrame = this.rgbToAscii(frameData, this.captureWidth, this.captureHeight);
+          this.currentFrame = this.rgbToAscii(frameData, this.outputWidth, this.outputHeight);
           this.emit('frame', this.currentFrame);
         }
       });
