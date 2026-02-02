@@ -1,103 +1,128 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// TERMAAZ - ASCII Video System (High Detail Dot Rendering)
+// TERMAAZ - ASCII Video System (Ultra HD Braille Rendering)
+// Each Braille character = 2x4 pixels = 8x more detail!
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { EventEmitter } from 'events';
 import { spawn, ChildProcess } from 'child_process';
-import { VIDEO_WIDTH, VIDEO_HEIGHT, VIDEO_FPS } from '../core/constants.js';
+import { VIDEO_FPS } from '../core/constants.js';
 
-// Dot-based gradient for ultra-fine detail rendering
-// Uses density of dots to create grayscale effect
-const DOT_GRADIENT = ' .·:∙•●';
+// Braille Unicode block starts at 0x2800
+// Each character represents a 2x4 dot matrix
+// Dot positions:
+// 1 4
+// 2 5
+// 3 6
+// 7 8
+const BRAILLE_BASE = 0x2800;
 
 export class AsciiVideo extends EventEmitter {
-  private width: number;
-  private height: number;
   private ffmpegProcess: ChildProcess | null = null;
   private isCapturing = false;
   private currentFrame: string[][] = [];
   private remoteFrames: Map<string, string[][]> = new Map();
   private frameBuffer: Buffer = Buffer.alloc(0);
-  // Higher resolution for more detail
-  private outputWidth = 320;
-  private outputHeight = 180;
 
-  constructor(width = VIDEO_WIDTH, height = VIDEO_HEIGHT) {
+  // Ultra high resolution capture
+  private captureWidth = 640;
+  private captureHeight = 480;
+
+  // Output dimensions in characters
+  // Each char = 2x4 pixels, so multiply by 2 and 4
+  private charWidth = 160;   // 320 pixels wide
+  private charHeight = 60;   // 240 pixels tall
+
+  constructor() {
     super();
-    // Increase default size for better detail
-    this.width = width * 2;
-    this.height = height * 1.5;
     this.initEmptyFrame();
   }
 
   private initEmptyFrame(): void {
-    this.currentFrame = Array(Math.floor(this.height))
+    this.currentFrame = Array(this.charHeight)
       .fill(null)
-      .map(() => Array(Math.floor(this.width)).fill(' '));
+      .map(() => Array(this.charWidth).fill(' '));
   }
 
-  // Convert grayscale to dot density
-  private grayscaleToDot(value: number, edge: number): string {
-    // Invert: darker areas = more dots
-    const inverted = 255 - value;
-    // Enhance edges for clarity
-    const enhanced = Math.min(255, inverted + edge * 0.3);
-    const index = Math.floor((enhanced / 255) * (DOT_GRADIENT.length - 1));
-    return DOT_GRADIENT[Math.min(index, DOT_GRADIENT.length - 1)];
+  // Convert 2x4 pixel block to braille character
+  private pixelsToBraille(pixels: boolean[][]): string {
+    // pixels is a 4x2 array (4 rows, 2 cols)
+    let code = 0;
+
+    // Braille dot positions mapping to bit positions:
+    // (0,0)=bit0, (1,0)=bit1, (2,0)=bit2, (0,1)=bit3
+    // (1,1)=bit4, (2,1)=bit5, (3,0)=bit6, (3,1)=bit7
+    if (pixels[0]?.[0]) code |= 0x01;  // dot 1
+    if (pixels[1]?.[0]) code |= 0x02;  // dot 2
+    if (pixels[2]?.[0]) code |= 0x04;  // dot 3
+    if (pixels[0]?.[1]) code |= 0x08;  // dot 4
+    if (pixels[1]?.[1]) code |= 0x10;  // dot 5
+    if (pixels[2]?.[1]) code |= 0x20;  // dot 6
+    if (pixels[3]?.[0]) code |= 0x40;  // dot 7
+    if (pixels[3]?.[1]) code |= 0x80;  // dot 8
+
+    return String.fromCharCode(BRAILLE_BASE + code);
   }
 
-  // Sobel edge detection for sharp outlines
-  private detectEdge(buffer: Buffer, imgWidth: number, x: number, y: number): number {
-    if (x <= 0 || x >= imgWidth - 1 || y <= 0 || y >= this.outputHeight - 1) {
-      return 0;
+  // Convert RGB buffer to ultra-HD braille
+  private rgbToBraille(buffer: Buffer, imgWidth: number, imgHeight: number): string[][] {
+    const result: string[][] = [];
+
+    // Calculate thresholds dynamically based on image brightness
+    let totalBrightness = 0;
+    let pixelCount = 0;
+
+    for (let i = 0; i < buffer.length; i += 3) {
+      const r = buffer[i] || 0;
+      const g = buffer[i + 1] || 0;
+      const b = buffer[i + 2] || 0;
+      totalBrightness += 0.299 * r + 0.587 * g + 0.114 * b;
+      pixelCount++;
     }
 
-    const getGray = (px: number, py: number): number => {
-      const idx = (py * imgWidth + px) * 3;
-      const r = buffer[idx] || 0;
-      const g = buffer[idx + 1] || 0;
-      const b = buffer[idx + 2] || 0;
-      return 0.299 * r + 0.587 * g + 0.114 * b;
-    };
+    const avgBrightness = totalBrightness / pixelCount;
+    // Dynamic threshold based on average brightness
+    const threshold = avgBrightness * 0.85;
 
-    // Sobel kernels for edge detection
-    const gx =
-      -getGray(x - 1, y - 1) + getGray(x + 1, y - 1) +
-      -2 * getGray(x - 1, y) + 2 * getGray(x + 1, y) +
-      -getGray(x - 1, y + 1) + getGray(x + 1, y + 1);
+    // Process in 2x4 blocks
+    const pixelWidth = this.charWidth * 2;
+    const pixelHeight = this.charHeight * 4;
 
-    const gy =
-      -getGray(x - 1, y - 1) - 2 * getGray(x, y - 1) - getGray(x + 1, y - 1) +
-      getGray(x - 1, y + 1) + 2 * getGray(x, y + 1) + getGray(x + 1, y + 1);
+    const scaleX = imgWidth / pixelWidth;
+    const scaleY = imgHeight / pixelHeight;
 
-    return Math.sqrt(gx * gx + gy * gy);
-  }
-
-  // Convert RGB buffer to dot-based ASCII with high detail
-  private rgbToAscii(buffer: Buffer, imgWidth: number, imgHeight: number): string[][] {
-    const result: string[][] = [];
-    const scaleX = imgWidth / this.width;
-    const scaleY = imgHeight / this.height;
-
-    for (let y = 0; y < this.height; y++) {
+    for (let charY = 0; charY < this.charHeight; charY++) {
       const row: string[] = [];
-      for (let x = 0; x < this.width; x++) {
-        const srcX = Math.floor(x * scaleX);
-        const srcY = Math.floor(y * scaleY);
-        const idx = (srcY * imgWidth + srcX) * 3;
 
-        const r = buffer[idx] || 0;
-        const g = buffer[idx + 1] || 0;
-        const b = buffer[idx + 2] || 0;
+      for (let charX = 0; charX < this.charWidth; charX++) {
+        // Get 2x4 pixel block
+        const pixels: boolean[][] = [];
 
-        // Grayscale with human perception weights
-        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+        for (let dy = 0; dy < 4; dy++) {
+          const pixelRow: boolean[] = [];
+          for (let dx = 0; dx < 2; dx++) {
+            const px = charX * 2 + dx;
+            const py = charY * 4 + dy;
 
-        // Edge detection for crisp outlines
-        const edge = this.detectEdge(buffer, imgWidth, srcX, srcY);
+            const srcX = Math.floor(px * scaleX);
+            const srcY = Math.floor(py * scaleY);
+            const idx = (srcY * imgWidth + srcX) * 3;
 
-        row.push(this.grayscaleToDot(gray, edge));
+            const r = buffer[idx] || 0;
+            const g = buffer[idx + 1] || 0;
+            const b = buffer[idx + 2] || 0;
+
+            // Grayscale with edge enhancement
+            const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+            // Pixel is "on" if darker than threshold (inverted for dark = dot)
+            pixelRow.push(gray < threshold);
+          }
+          pixels.push(pixelRow);
+        }
+
+        row.push(this.pixelsToBraille(pixels));
       }
+
       result.push(row);
     }
 
@@ -137,7 +162,7 @@ export class AsciiVideo extends EventEmitter {
     }
 
     const outputArgs = [
-      '-vf', `scale=${this.outputWidth}:${this.outputHeight},fps=${VIDEO_FPS}`,
+      '-vf', `scale=${this.captureWidth}:${this.captureHeight},fps=${VIDEO_FPS}`,
       '-f', 'rawvideo',
       '-pix_fmt', 'rgb24',
       '-an',
@@ -152,7 +177,7 @@ export class AsciiVideo extends EventEmitter {
         stdio: ['ignore', 'pipe', 'ignore'],
       });
 
-      const frameSize = this.outputWidth * this.outputHeight * 3;
+      const frameSize = this.captureWidth * this.captureHeight * 3;
 
       this.ffmpegProcess.stdout?.on('data', (chunk: Buffer) => {
         this.frameBuffer = Buffer.concat([this.frameBuffer, chunk]);
@@ -161,7 +186,7 @@ export class AsciiVideo extends EventEmitter {
           const frameData = this.frameBuffer.subarray(0, frameSize);
           this.frameBuffer = this.frameBuffer.subarray(frameSize);
 
-          this.currentFrame = this.rgbToAscii(frameData, this.outputWidth, this.outputHeight);
+          this.currentFrame = this.rgbToBraille(frameData, this.captureWidth, this.captureHeight);
           this.emit('frame', this.currentFrame);
         }
       });
@@ -195,34 +220,47 @@ export class AsciiVideo extends EventEmitter {
     const result: string[][] = [];
     const time = Date.now() / 1000;
 
-    for (let y = 0; y < this.height; y++) {
+    for (let charY = 0; charY < this.charHeight; charY++) {
       const row: string[] = [];
-      for (let x = 0; x < this.width; x++) {
-        const nx = x / this.width;
-        const ny = y / this.height;
 
-        // Animated face with dot-based rendering
-        const faceDist = Math.sqrt(
-          Math.pow((nx - 0.5) / 0.35, 2) +
-          Math.pow((ny - 0.45) / 0.45, 2)
-        );
+      for (let charX = 0; charX < this.charWidth; charX++) {
+        const pixels: boolean[][] = [];
 
-        const leftEyeDist = Math.sqrt(Math.pow(nx - 0.35, 2) + Math.pow(ny - 0.35, 2));
-        const rightEyeDist = Math.sqrt(Math.pow(nx - 0.65, 2) + Math.pow(ny - 0.35, 2));
-        const blink = Math.abs(Math.sin(time * 2)) > 0.9;
+        for (let dy = 0; dy < 4; dy++) {
+          const pixelRow: boolean[] = [];
+          for (let dx = 0; dx < 2; dx++) {
+            const nx = (charX * 2 + dx) / (this.charWidth * 2);
+            const ny = (charY * 4 + dy) / (this.charHeight * 4);
 
-        const mouthOpen = Math.abs(Math.sin(time * 3)) * 0.05;
-        const isMouth = Math.abs(nx - 0.5) < 0.15 && Math.abs(ny - 0.65 - mouthOpen) < 0.03;
+            // Animated face
+            const faceDist = Math.sqrt(
+              Math.pow((nx - 0.5) / 0.3, 2) +
+              Math.pow((ny - 0.45) / 0.4, 2)
+            );
 
-        let char = ' ';
-        if (faceDist < 1) char = '.';
-        if (faceDist < 0.8) char = '·';
-        if (faceDist > 0.85 && faceDist < 1) char = '●';
-        if (!blink && (leftEyeDist < 0.06 || rightEyeDist < 0.06)) char = '●';
-        if (blink && (leftEyeDist < 0.06 || rightEyeDist < 0.06)) char = '·';
-        if (isMouth) char = '∙';
+            const leftEyeDist = Math.sqrt(Math.pow(nx - 0.35, 2) + Math.pow(ny - 0.35, 2));
+            const rightEyeDist = Math.sqrt(Math.pow(nx - 0.65, 2) + Math.pow(ny - 0.35, 2));
+            const blink = Math.abs(Math.sin(time * 2)) > 0.9;
 
-        row.push(char);
+            const smileAngle = Math.atan2(ny - 0.55, nx - 0.5);
+            const smileDist = Math.sqrt(Math.pow(nx - 0.5, 2) + Math.pow(ny - 0.55, 2));
+            const isSmile = smileDist > 0.1 && smileDist < 0.18 && smileAngle > 0.3 && smileAngle < Math.PI - 0.3;
+
+            let on = false;
+            // Face outline
+            if (faceDist > 0.9 && faceDist < 1.05) on = true;
+            // Eyes
+            if (!blink && (leftEyeDist < 0.05 || rightEyeDist < 0.05)) on = true;
+            if (blink && (leftEyeDist < 0.05 || rightEyeDist < 0.05) && Math.abs(ny - 0.35) < 0.01) on = true;
+            // Smile
+            if (isSmile) on = true;
+
+            pixelRow.push(on);
+          }
+          pixels.push(pixelRow);
+        }
+
+        row.push(this.pixelsToBraille(pixels));
       }
       result.push(row);
     }
@@ -274,7 +312,7 @@ export class AsciiVideo extends EventEmitter {
   }
 
   getDimensions(): { width: number; height: number } {
-    return { width: this.width, height: this.height };
+    return { width: this.charWidth, height: this.charHeight };
   }
 
   destroy(): void {

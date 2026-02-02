@@ -165,8 +165,9 @@ interface VideoPanelProps {
 }
 
 const VideoPanel: React.FC<VideoPanelProps> = ({ title, frame, color, isLocal }) => {
-  const targetWidth = isLocal ? 40 : 80;
-  const targetHeight = isLocal ? 15 : 24;
+  // Ultra HD: larger display for braille characters
+  const targetWidth = isLocal ? 60 : 140;
+  const targetHeight = isLocal ? 20 : 50;
   const scaledFrame = scaleFrame(frame, targetWidth, targetHeight);
 
   return (
